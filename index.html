@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -258,11 +259,24 @@
   </div>
 
   <script>
+    // Full list (desktop/tablet)
     const yesList = [
-      "Yes","हाँ","ஆம்","అవును","ಹೌದು","അതെ","হ্যाँ","हो","હા","ਹਾਂ",
+      "Yes","हाँ","ஆம்","అవును","ಹೌದು","അതെ","হ্যাঁ","हो","હા","ਹਾਂ",
       "ہاں","Sí","Oui","Ja","Sì","Sim","Да","نعم","हाँजी","はい",
-      "네","是","Evet","Ναι","כן","Tak","Ano","Igen","Ja","Oo"
+      "네","是的","Evet","Ναι","כן","Tak","Ano","Igen","Ja","Oo"
     ];
+
+    // Option 1: Use fewer languages on phones for a cleaner layout
+    function getYesListForScreen() {
+      const isPhone = window.innerWidth < 520;
+      if (!isPhone) return yesList;
+
+      // Curated mobile set (still diverse, but breathable)
+      return [
+        "Yes","हाँ","हाँजी","Sí","Oui","Ja","Sì","Sim","Да","نعم",
+        "はい","네","是的","Evet","Ναι","כן","Tak","Igen","Ano","Oo"
+      ];
+    }
 
     const step0 = document.getElementById("step0");
     const nextBtn = document.getElementById("nextBtn");
@@ -271,14 +285,12 @@
     const backBtn = document.getElementById("backBtn");
     const counterText = document.getElementById("counterText");
 
-    // Hide step 0 and enable interactions
     function startApp() {
       step0.style.display = "none";
     }
 
     nextBtn.addEventListener("click", startApp);
 
-    // Also allow Enter / Space on Step 0
     window.addEventListener("keydown", (e) => {
       if (step0.style.display !== "none" && (e.key === "Enter" || e.key === " ")) {
         e.preventDefault();
@@ -294,7 +306,7 @@
         return;
       }
       counterText.style.display = "block";
-      counterText.textContent = `You’ve said 'yes' ${yesCount} times. I like your consistency.`;
+      counterText.textContent = `You’ve said yes ${yesCount} times. I like your consistency.`;
     }
 
     function showOverlay() {
@@ -315,7 +327,7 @@
     // ---- Button placement + motion ----
     const buttons = [];
     const pad = 16;
-    const topSafe = 110;
+    let topSafe = 110;
 
     function overlaps(a, b) {
       return !(
@@ -343,10 +355,15 @@
     }
 
     function buildButtons() {
+      // Extra breathing room under the title on phones
+      topSafe = window.innerWidth < 520 ? 150 : 110;
+
       document.querySelectorAll(".yes-box").forEach(b => b.remove());
       buttons.length = 0;
 
-      yesList.forEach(text => {
+      const list = getYesListForScreen();
+
+      list.forEach(text => {
         const el = document.createElement("button");
         el.className = "yes-box";
         el.type = "button";
@@ -357,7 +374,6 @@
         const w = el.offsetWidth;
         const h = el.offsetHeight;
 
-        // Keep speed brisk but not chaotic (good on phone too)
         const speed = 0.85 + Math.random() * 1.05;
         const angle = Math.random() * Math.PI * 2;
 
@@ -368,7 +384,6 @@
           vy: Math.sin(angle) * speed
         };
 
-        // If placement fails (rare on small screens), allow a fallback
         const placed = tryPlace(item);
         if (!placed) {
           item.x = 10 + Math.random() * Math.max(0, window.innerWidth - w - 20);
@@ -384,7 +399,6 @@
     buildButtons();
 
     function tick() {
-      // Don’t animate while step0 or overlay is open
       if (step0.style.display === "none" && !overlay.classList.contains("show")) {
         const W = innerWidth;
         const H = innerHeight;
@@ -393,14 +407,12 @@
           let nx = b.x + b.vx;
           let ny = b.y + b.vy;
 
-          // bounce bounds
           if (nx < 8 || nx > W - b.w - 8) b.vx *= -1;
           if (ny < topSafe || ny > H - b.h - 8) b.vy *= -1;
 
           nx = b.x + b.vx;
           ny = b.y + b.vy;
 
-          // light collision avoidance
           const cand = { ...b, x: nx, y: ny };
           if (buttons.some((o, j) => i !== j && overlaps(cand, o))) {
             b.vx *= -1;
@@ -427,7 +439,6 @@
     let lastHeart = 0;
     function spawnHeart(x, y) {
       const now = performance.now();
-      // throttle + don’t spam while step0/overlay
       if (now - lastHeart < 22) return;
       if (overlay.classList.contains("show") || step0.style.display !== "none") return;
       lastHeart = now;
@@ -449,3 +460,4 @@
   </script>
 </body>
 </html>
+```
